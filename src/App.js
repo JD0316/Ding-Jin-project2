@@ -1,24 +1,38 @@
-import logo from './logo.svg';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import { GameProvider } from './context/GameContext';
 import './App.css';
+
+import Home from './pages/Home';
+import Rules from './pages/Rules';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import HighScores from './pages/HighScores';
+import GameSelection from './pages/GameSelection';
+import GameNormal from './pages/GameNormal';
+import GameEasy from './pages/GameEasy';
+
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <GameProvider>
+      <Router>
+        <Navbar />
+        <main>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/rules" element={<Rules />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/scores" element={<HighScores />} />
+            <Route path="/games" element={<GameSelection />} />
+            <Route path="/games/normal" element={<GameNormal />} />
+            <Route path="/games/easy" element={<GameEasy />} />
+          </Routes>
+        </main>
+      </Router>
+    </GameProvider>
   );
 }
 
