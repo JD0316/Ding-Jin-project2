@@ -9,6 +9,7 @@ export const useGame = () => {
 
 const findConflicts = (board) => {
   const conflicts = new Set();
+  if (!board || board.length === 0) return conflicts;
   const size = board.length;
   for (let i = 0; i < size; i++) {
     const rowCounts = {}, colCounts = {};
@@ -44,27 +45,56 @@ const findConflicts = (board) => {
   return conflicts;
 };
 
+// --- Local Storage Logic ---
+const getInitialState = () => {
+  try {
+    const savedState = localStorage.getItem('sudokuGameState');
+    if (savedState) {
+      return JSON.parse(savedState);
+    }
+  } catch (error) {
+    console.error("Could not load state from local storage", error);
+  }
+  return null;
+};
+
 export const GameProvider = ({ children }) => {
-  const [difficulty, setDifficulty] = useState(null);
-  const [initialBoard, setInitialBoard] = useState([]); // To store the original puzzle
-  const [board, setBoard] = useState([]);
-  const [selectedCell, setSelectedCell] = useState({ row: null, col: null });
-  const [timer, setTimer] = useState(0);
-  const [isGameActive, setIsGameActive] = useState(false);
-  const [isGameWon, setIsGameWon] = useState(false);
+  const [gameState, setGameState] = useState(getInitialState() || {
+    difficulty: null,
+    initialBoard: [],
+    board: [],
+    selectedCell: { row: null, col: null },
+    timer: 0,
+    isGameActive: false,
+    isGameWon: false,
+  });
+
   const timerRef = useRef(null);
 
+  // Effect to save state to local storage whenever it changes
   useEffect(() => {
-    if (isGameActive) {
-      timerRef.current = setInterval(() => setTimer(prev => prev + 1), 1000);
+    try {
+      // Don't save if the game is not active and not won (i.e., initial state)
+      if (gameState.isGameActive || gameState.isGameWon) {
+        localStorage.setItem('sudokuGameState', JSON.stringify(gameState));
+      }
+    } catch (error) {
+      console.error("Could not save state to local storage", error);
+    }
+  }, [gameState]);
+
+  useEffect(() => {
+    if (gameState.isGameActive) {
+      timerRef.current = setInterval(() => {
+        setGameState(prev => ({ ...prev, timer: prev.timer + 1 }));
+      }, 1000);
     } else {
       clearInterval(timerRef.current);
     }
     return () => clearInterval(timerRef.current);
-  }, [isGameActive]);
+  }, [gameState.isGameActive]);
 
   const createNewGame = useCallback((level) => {
-    setDifficulty(level);
     const difficultyForGen = level === 'easy' ? 'medium' : level;
     const rawBoard = getSudoku(difficultyForGen);
     const puzzle = rawBoard.puzzle.split('');
@@ -80,31 +110,40 @@ export const GameProvider = ({ children }) => {
       }
       formattedBoard.push(row);
     }
-    setInitialBoard(JSON.parse(JSON.stringify(formattedBoard))); // Deep copy
-    setBoard(formattedBoard);
-    setSelectedCell({ row: null, col: null });
-    setTimer(0);
-    setIsGameWon(false);
-    setIsGameActive(true);
+    
+    localStorage.removeItem('sudokuGameState'); // Clear old state
+    setGameState({
+      difficulty: level,
+      initialBoard: JSON.parse(JSON.stringify(formattedBoard)),
+      board: formattedBoard,
+      selectedCell: { row: null, col: null },
+      timer: 0,
+      isGameWon: false,
+      isGameActive: true,
+    });
   }, []);
 
   const resetGame = () => {
-    setBoard(JSON.parse(JSON.stringify(initialBoard))); // Restore from initial state
-    setTimer(0);
-    setIsGameWon(false);
-    setIsGameActive(true);
-    setSelectedCell({ row: null, col: null });
+    localStorage.removeItem('sudokuGameState');
+    setGameState(prev => ({
+      ...prev,
+      board: JSON.parse(JSON.stringify(prev.initialBoard)),
+      timer: 0,
+      isGameWon: false,
+      isGameActive: true,
+      selectedCell: { row: null, col: null },
+    }));
   };
 
   const selectCell = (row, col) => {
-    if (isGameWon || !board[row]?.[col]?.isEditable) return;
-    setSelectedCell({ row, col });
+    if (gameState.isGameWon || !gameState.board[row]?.[col]?.isEditable) return;
+    setGameState(prev => ({ ...prev, selectedCell: { row, col } }));
   };
 
   const updateCellValue = (value) => {
-    if (selectedCell.row === null || isGameWon) return;
-    const newBoard = board.map(row => row.map(cell => ({ ...cell })));
-    const { row, col } = selectedCell;
+    if (gameState.selectedCell.row === null || gameState.isGameWon) return;
+    const newBoard = gameState.board.map(row => row.map(cell => ({ ...cell })));
+    const { row, col } = gameState.selectedCell;
     newBoard[row][col].value = value;
     const conflicts = findConflicts(newBoard);
     let isBoardFull = true;
@@ -114,17 +153,21 @@ export const GameProvider = ({ children }) => {
         if (newBoard[r][c].value === 0) isBoardFull = false;
       }
     }
-    setBoard(newBoard);
-    if (isBoardFull && conflicts.size === 0) {
-      setIsGameWon(true);
-      setIsGameActive(false);
+    
+    const gameWon = isBoardFull && conflicts.size === 0;
+    if (gameWon) {
+      localStorage.removeItem('sudokuGameState'); // Clear storage on win
     }
+
+    setGameState(prev => ({
+      ...prev,
+      board: newBoard,
+      isGameWon: gameWon,
+      isGameActive: !gameWon,
+    }));
   };
 
-  const value = {
-    difficulty, board, selectedCell, timer, isGameActive, isGameWon,
-    createNewGame, selectCell, updateCellValue, resetGame,
-  };
+  const value = { ...gameState, createNewGame, selectCell, updateCellValue, resetGame };
 
   return (
     <GameContext.Provider value={value}>

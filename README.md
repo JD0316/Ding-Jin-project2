@@ -1,70 +1,54 @@
-# Getting Started with Create React App
+# Sudoku Master - React Single-Player Game
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is a single-player version of the classic puzzle game, Sudoku, built with React. It expands upon a previous static HTML/CSS project by introducing full game logic, state management via React Context, and dynamic component-based rendering. The application features two game modes: a 6x6 easy mode and a 9x9 normal mode, both with randomly generated puzzles.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## Project Information
 
-### `npm start`
+- **GitHub Repo:** https://github.com/JD0316/Ding-Jin-project2.git
+- **Collaborators:** N/A
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Writeup
 
-### `npm test`
+### What were some challenges you faced while making this app?
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+One of the biggest challenges was designing a robust and bug-free state management system using the React Context API. Specifically, implementing the real-time conflict detection (`findConflicts` function) proved to be quite tricky. Refactoring this logic multiple times to correctly and efficiently identify all rule violations across rows, columns, and subgrids for both 6x6 and 9x9 boards was a significant but rewarding learning experience in debugging and algorithmic thinking.
 
-### `npm run build`
+### Given more time, what additional features, functional or design changes would you make?
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Given more time, I would focus on enhancing the user experience and adding more "game-like" features. First, I would implement the "Hint" system bonus, which would highlight a solvable cell for the user. Second, I would add a backend service and database to support user accounts, allowing players to save their progress, track their best times, and compete on a persistent global high-score leaderboard. Finally, I would add more visual polish, such as different board themes (e.g., a dark mode) and more satisfying animations for winning the game or clearing an error.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### What assumptions did you make while working on this assignment?
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+I made a few key assumptions while developing the app. First, I assumed that the `sudoku-gen` library, while useful, might not produce perfectly balanced puzzles for all difficulties, which led me to create my own logic for generating a clean 6x6 board from a 9x9 source. I also assumed that for the mocked pages (like High Scores and Login), a clean and simple presentation was sufficient, as the focus of this project was the core game functionality. Finally, I assumed that a global context was the best fit for state management, as nearly every component of the game needed access to the board state or game status.
 
-### `npm run eject`
+### How long did this assignment take to complete?
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+This assignment took approximately 25 hours to complete.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### What bonus points did you accomplish?
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- **Local Storage (3 Bonus Points):** Accomplished. The entire game state (including the current board, timer, and difficulty) is automatically saved to `window.localStorage` after every move. When the application is re-opened, it restores the previous game state, allowing the user to seamlessly continue where they left off. This logic is encapsulated entirely within `src/context/GameContext.js`, ensuring that other components remain unaware of the implementation details, and the local storage is cleared automatically when a new game is started or a puzzle is solved.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+---
 
-## Learn More
+## Getting Started Locally
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+To run this project on your local machine:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/JD0316/Ding-Jin-project2.git
+   ```
+2. Install dependencies:
+   ```sh
+   npm install
+   ```
+3. Start the development server:
+   ```sh
+   npm start
+   ```
+This will open the app in your browser at `http://localhost:3000`.
